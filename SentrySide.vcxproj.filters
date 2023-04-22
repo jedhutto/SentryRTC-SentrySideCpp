@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ProjectStructures.cpp" />
+    <ClCompile Include="RtcHandler.cpp" />
+    <ClCompile Include="TableStorageEntry.cpp" />
+    <ClCompile Include="TableStorageRequestHandler.cpp" />
+    <ClCompile Include="ContolDataChannelHandler.cpp" />
+    <ClCompile Include="CameraDataChannelHandler.cpp" />
+    <ClCompile Include="Signal.hpp">
+      <Filter>Signals</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageSignal.hpp">
+      <Filter>Signals</Filter>
+    </ClCompile>
+    <ClCompile Include="MovementHandler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ProjectStructures.h" />
+    <ClInclude Include="RtcHandler.h" />
+    <ClInclude Include="TableStorageEntry.h" />
+    <ClInclude Include="TableStorageRequestHandler.h" />
+    <ClInclude Include="ContolDataChannelHandler.h" />
+    <ClInclude Include="CameraDataChannelHandler.h" />
+    <ClInclude Include="MovementSignal.hpp">
+      <Filter>Signals</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementHandler.h" />
+    <ClInclude Include="MovementConfigSignal.hpp">
+      <Filter>Signals</Filter>
+    </ClInclude>
+    <ClInclude Include="base64.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Signals">
+      <UniqueIdentifier>{6d27b842-86a6-4846-918b-44cbb80e0687}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32819.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SentrySide", "SentrySide.vcxproj", "{B5C473D7-79B5-46C5-8B8B-F3D443536531}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Release|ARM64 = Release|ARM64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B5C473D7-79B5-46C5-8B8B-F3D443536531}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B5C473D7-79B5-46C5-8B8B-F3D443536531}.Debug|ARM64.Build.0 = Debug|ARM64
+		{B5C473D7-79B5-46C5-8B8B-F3D443536531}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{B5C473D7-79B5-46C5-8B8B-F3D443536531}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B5C473D7-79B5-46C5-8B8B-F3D443536531}.Release|ARM64.Build.0 = Release|ARM64
+		{B5C473D7-79B5-46C5-8B8B-F3D443536531}.Release|ARM64.Deploy.0 = Release|ARM64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3E7E91E3-54D8-4B7C-B194-066429163658}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{b5c473d7-79b5-46c5-8b8b-f3d443536531}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>SentrySide</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Raspberry</TargetLinuxPlatform>
+    <LinuxProjectType>{8748239F-558C-44D1-944B-07B09C35B330}</LinuxProjectType>
+    <ProjectName>SentrySide</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteCopyIncludeDirectories>
+    </RemoteCopyIncludeDirectories>
+    <PlatformToolset>Remote_GCC_1_0</PlatformToolset>
+    <UseOfStl>libstdc++_shared</UseOfStl>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteCopyIncludeDirectories>~/projects/SentrySide/include/rtc</RemoteCopyIncludeDirectories>
+    <PlatformToolset>Remote_GCC_1_0</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <AdditionalSourcesToCopyMapping>$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
+    <RemoteCopySourceMethod>sftp</RemoteCopySourceMethod>
+    <RemotePreBuildEventUseInBuild>true</RemotePreBuildEventUseInBuild>
+    <EnableASAN>false</EnableASAN>
+    <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);@(DataFilesToCopyRemotely)</SourcesToCopyRemotelyOverride>
+    <LibraryPath>
+    </LibraryPath>
+    <ProjectPublicIncludePath>
+    </ProjectPublicIncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <AdditionalSourcesToCopyMapping>$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <IncludePath>C:/Users/Jed/source/vcpkg/installed/arm-windows/include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <IncludePath>C:/Users/Jed/source/vcpkg/installed/arm-windows/include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <AdditionalSourcesToCopyMapping>
+    </AdditionalSourcesToCopyMapping>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Link>
+      <LibraryDependencies>ssl;crypto;curl;gstreamer-1.0;gobject-2.0;glib-2.0;pthread;datachannel;pigpiod_if2;rt</LibraryDependencies>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </RemotePostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <Link>
+      <LibraryDependencies>wiringPi;curl</LibraryDependencies>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>gpio export 26 out</Command>
+      <Message>export pin 26 using the gpio utility so that we can execute the blink program without sudo</Message>
+    </RemotePostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Link>
+      <LibraryDependencies>wiringPi</LibraryDependencies>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>gpio export 17 out</Command>
+      <Message>export pin 17 using the gpio utility so that we can execute the blink program without sudo</Message>
+    </RemotePostBuildEvent>
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\Jed\source\vcpkg\installed\arm-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <Link>
+      <LibraryDependencies>wiringPi</LibraryDependencies>
+    </Link>
+    <RemotePostBuildEvent>
+      <Command>gpio export 17 out</Command>
+      <Message>export pin 17 using the gpio utility so that we can execute the blink program without sudo</Message>
+    </RemotePostBuildEvent>
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Users\Jed\source\vcpkg\installed\arm-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CameraDataChannelHandler.cpp" />
+    <ClCompile Include="ContolDataChannelHandler.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MessageSignal.hpp" />
+    <ClCompile Include="MovementHandler.cpp" />
+    <ClCompile Include="ProjectStructures.cpp" />
+    <ClCompile Include="RtcHandler.cpp" />
+    <ClCompile Include="Signal.hpp" />
+    <ClCompile Include="TableStorageEntry.cpp" />
+    <ClCompile Include="TableStorageRequestHandler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="base64.hpp" />
+    <ClInclude Include="CameraDataChannelHandler.h" />
+    <ClInclude Include="ContolDataChannelHandler.h" />
+    <ClInclude Include="MovementConfigSignal.hpp" />
+    <ClInclude Include="MovementHandler.h" />
+    <ClInclude Include="MovementSignal.hpp" />
+    <ClInclude Include="ProjectStructures.h" />
+    <ClInclude Include="RtcHandler.h" />
+    <ClInclude Include="TableStorageEntry.h" />
+    <ClInclude Include="TableStorageRequestHandler.h" />
+  </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile />
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/include/gstreamer-1.0;/usr/include/glib-2.0;/usr/lib/arm-linux-gnueabihf/glib-2.0/include;/usr/local/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <Optimization>Disabled</Optimization>
+      <CLanguageStandard>gnu11</CLanguageStandard>
+      <AdditionalOptions>-I/usr/include/glib-2.0 -I/usr/lib/aarch64-linux-gnu/glib-2.0/include -lglib-2.0 -l/usr/local/include %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <SharedLibrarySearchPath>/usr/local/lib;/home/pi/repos/libdatachannel/build/;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <AdditionalOptions>-L/home/pi/repos/libdatachannel/build/ -ldatachannel %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>%(Link.AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <RemotePreBuildEvent>
+      <Command>
+      </Command>
+    </RemotePreBuildEvent>
+    <RemotePreLinkEvent>
+      <Command>
+      </Command>
+    </RemotePreLinkEvent>
+    <PreBuildEvent>
+      <AdditionalSourcesToCopyMapping>C:\Users\Jed\source\repos\SentrySide\include\base64.hpp:=/home/pi/projects/SentrySide/include/base64.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\candidate.hpp:=/home/pi/projects/SentrySide/include/rtc/candidate.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\channel.hpp:=/home/pi/projects/SentrySide/include/rtc/channel.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\common.hpp:=/home/pi/projects/SentrySide/include/rtc/common.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\configuration.hpp:=/home/pi/projects/SentrySide/include/rtc/configuration.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\datachannel.hpp:=/home/pi/projects/SentrySide/include/rtc/datachannel.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\description.hpp:=/home/pi/projects/SentrySide/include/rtc/description.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\global.hpp:=/home/pi/projects/SentrySide/include/rtc/global.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\h264packetizationhandler.hpp:=/home/pi/projects/SentrySide/include/rtc/h264packetizationhandler.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\h264rtppacketizer.hpp:=/home/pi/projects/SentrySide/include/rtc/h264rtppacketizer.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\mediachainablehandler.hpp:=/home/pi/projects/SentrySide/include/rtc/mediachainablehandler.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\mediahandler.hpp:=/home/pi/projects/SentrySide/include/rtc/mediahandler.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\mediahandlerelement.hpp:=/home/pi/projects/SentrySide/include/rtc/mediahandlerelement.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\mediahandlerrootelement.hpp:=/home/pi/projects/SentrySide/include/rtc/mediahandlerrootelement.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\message.hpp:=/home/pi/projects/SentrySide/include/rtc/message.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\nalunit.hpp:=/home/pi/projects/SentrySide/include/rtc/nalunit.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\opuspacketizationhandler.hpp:=/home/pi/projects/SentrySide/include/rtc/opuspacketizationhandler.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\opusrtppacketizer.hpp:=/home/pi/projects/SentrySide/include/rtc/opusrtppacketizer.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\peerconnection.hpp:=/home/pi/projects/SentrySide/include/rtc/peerconnection.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\reliability.hpp:=/home/pi/projects/SentrySide/include/rtc/reliability.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtc.h:=/home/pi/projects/SentrySide/include/rtc/rtc.h;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtc.hpp:=/home/pi/projects/SentrySide/include/rtc/rtc.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtcpnackresponder.hpp:=/home/pi/projects/SentrySide/include/rtc/rtcpnackresponder.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtcpreceivingsession.hpp:=/home/pi/projects/SentrySide/include/rtc/rtcpreceivingsession.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtcpsrreporter.hpp:=/home/pi/projects/SentrySide/include/rtc/rtcpsrreporter.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtp.hpp:=/home/pi/projects/SentrySide/include/rtc/rtp.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtppacketizationconfig.hpp:=/home/pi/projects/SentrySide/include/rtc/rtppacketizationconfig.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\rtppacketizer.hpp:=/home/pi/projects/SentrySide/include/rtc/rtppacketizer.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\track.hpp:=/home/pi/projects/SentrySide/include/rtc/track.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\utils.hpp:=/home/pi/projects/SentrySide/include/rtc/utils.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\websocket.hpp:=/home/pi/projects/SentrySide/include/rtc/websocket.hpp;C:\Users\Jed\source\repos\SentrySide\include\rtc\websocketserver.hpp:=/home/pi/projects/SentrySide/include/rtc/websocketserver.hpp</AdditionalSourcesToCopyMapping>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <ClCompile />
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <SharedLibrarySearchPath>%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <AdditionalOptions>-L/home/pi/repo/libdatachannel/ -ldatachannel %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <RemotePreBuildEvent>
+      <Command>export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/pi/repo/libdatachannel</Command>
+    </RemotePreBuildEvent>
+    <RemotePreLinkEvent>
+      <Command>
+      </Command>
+    </RemotePreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/include/gstreamer-1.0;/usr/include/glib-2.0;/usr/lib/arm-linux-gnueabihf/glib-2.0/include;/usr/local/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <AdditionalOptions>-I/usr/include/glib-2.0 -I/usr/lib/aarch64-linux-gnu/glib-2.0/include -lglib-2.0 -l/usr/local/include %(AdditionalOptions)</AdditionalOptions>
+      <CLanguageStandard>gnu11</CLanguageStandard>
+      <OmitFramePointers>false</OmitFramePointers>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SharedLibrarySearchPath>/usr/local/lib;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <LibraryDependencies>ssl;crypto;curl;gstreamer-1.0;gobject-2.0;glib-2.0;gstapp-1.0;pthread;datachannel;pigpiod_if2;rt</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/include/gstreamer-1.0;/usr/include/glib-2.0;/usr/lib/arm-linux-gnueabihf/glib-2.0/include;/usr/local/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CLanguageStandard>gnu11</CLanguageStandard>
+      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <AdditionalOptions>-I/usr/include/glib-2.0 -I/usr/lib/aarch64-linux-gnu/glib-2.0/include -lglib-2.0 -l/usr/local/include %(AdditionalOptions)</AdditionalOptions>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>Full</Optimization>
+    </ClCompile>
+    <Link>
+      <SharedLibrarySearchPath>/usr/local/lib;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <LibraryDependencies>ssl;crypto;curl;gstreamer-1.0;gobject-2.0;glib-2.0;pthread;datachannel;pigpiod_if2;rt</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
