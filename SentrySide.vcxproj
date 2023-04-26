@@ -145,8 +145,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MessageSignal.hpp" />
     <ClCompile Include="MovementHandler.cpp" />
+    <ClCompile Include="PCA9685.cpp" />
     <ClCompile Include="ProjectStructures.cpp" />
     <ClCompile Include="RtcHandler.cpp" />
+    <ClCompile Include="ServoHandler.cpp" />
     <ClCompile Include="Signal.hpp" />
     <ClCompile Include="TableStorageEntry.cpp" />
     <ClCompile Include="TableStorageRequestHandler.cpp" />
@@ -158,8 +160,11 @@
     <ClInclude Include="MovementConfigSignal.hpp" />
     <ClInclude Include="MovementHandler.h" />
     <ClInclude Include="MovementSignal.hpp" />
+    <ClInclude Include="PCA9685.h" />
     <ClInclude Include="ProjectStructures.h" />
     <ClInclude Include="RtcHandler.h" />
+    <ClInclude Include="ServoHandler.h" />
+    <ClInclude Include="ServoSignal.hpp" />
     <ClInclude Include="TableStorageEntry.h" />
     <ClInclude Include="TableStorageRequestHandler.h" />
   </ItemGroup>
