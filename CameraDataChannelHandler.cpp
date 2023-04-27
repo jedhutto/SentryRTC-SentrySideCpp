@@ -152,8 +152,8 @@ void CameraDataChannelHandler::StreamCameraFunction(shared_ptr<rtc::Track> track
 
 		caps1 = gst_caps_new_simple("video/x-raw",
 			"format", G_TYPE_STRING, "UYVY",//UYVY I420 
-			"width", G_TYPE_INT, 640,  //640 480 720 1920 240 1296
-			"height", G_TYPE_INT, 480, //480 320 480 1080 160 972
+			"width", G_TYPE_INT, 640,  //640   480 720 1920 240 1296   1640
+			"height", G_TYPE_INT, 480, //480   320 480 1080 160 972	 922
 			"framerate", GST_TYPE_FRACTION, 20, 1,
 			NULL);
 		if (!caps1)

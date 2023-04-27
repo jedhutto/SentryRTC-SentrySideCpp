@@ -117,7 +117,7 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 				break;
 			case Signal::CameraLook:
 				std::memcpy(&servoHandler.ss, ((std::vector<std::byte>)std::get<std::vector<std::byte>>(data)).data(), sizeof(ServoSignal));
-				movementHandler.read = true;
+				servoHandler.read = true;
 				break;
 			case -1:
 				std::cout << "Signal Error" << std::endl;
@@ -132,7 +132,6 @@ int main(int argc, char** argv) {
 	//Setup Azure Comms
 	int pi = pigpio_start(NULL, NULL);
 	PCA9685 pca9685 = PCA9685(pi,1, 0x40,0);
-	pca9685.SetFrequency(50.0);
 	pca9685.SetDutyCyclePercent(0, 0);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
 	pca9685.SetDutyCyclePercent(0, .5);
@@ -140,7 +139,7 @@ int main(int argc, char** argv) {
 	pca9685.SetDutyCyclePercent(0, 1);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
 	pca9685.SetDutyCyclePercent(0, .5);
-	pca9685.~PCA9685();
+	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/4));
 
 	TableStorageEntry answerTableEntry = TableStorageEntry("answerer");
 	answerTableEntry.status = "standby";
@@ -153,8 +152,8 @@ int main(int argc, char** argv) {
 	std::shared_ptr<rtc::Track> track;
 	
 	TableStorageRequestHandler tableStorageRequestHandler;
-	MovementHandler movementHandler = MovementHandler();
-	ServoHandler servoHandler = ServoHandler(0);
+	ServoHandler servoHandler = ServoHandler(pi, 0, pca9685);
+	MovementHandler movementHandler = MovementHandler(pi);
 	CameraDataChannelHandler cameraHandler;
 
 

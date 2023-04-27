@@ -13,8 +13,8 @@ public:
 	std::thread mhThread;
 	int pi;
 	int channel;
-	PCA9685 servoDriver = NULL;
-	ServoHandler(int channel);
+	PCA9685 servoDriver;
+	ServoHandler(int pi, int channel, PCA9685 pca9685);
 	~ServoHandler();
 	void start();
 	void setSignal(ServoSignal);

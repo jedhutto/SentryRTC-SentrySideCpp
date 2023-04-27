@@ -1,16 +1,16 @@
 #include "ServoHandler.h"
+#include <pigpiod_if2.h>
+#include <iostream>
 
-ServoHandler::ServoHandler(int channel)
+ServoHandler::ServoHandler(int pi, int channel, PCA9685 pca9685)
 {
 	this->channel = channel;
-	pi = pigpio_start(NULL, NULL);
-	servoDriver = PCA9685(pi);
-	servoDriver.SetFrequency(50.0);
+	this->pi = pi;
+	this->servoDriver = pca9685;
 }
 
 ServoHandler::~ServoHandler()
 {
-	servoDriver.~PCA9685();
 }
 
 void ServoHandler::start()
@@ -32,8 +32,6 @@ void ServoHandler::MovementLoop(bool& read, ServoSignal& ss, PCA9685& servoDrive
 
 			servoDriver.SetDutyCycle(channel, ss.pulseWidth);
 		}
-
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 	}
 }

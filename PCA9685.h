@@ -4,6 +4,7 @@
 class PCA9685
 {
 public:
+	PCA9685() = default;;
 	PCA9685(int pi, int bus = 1, uint8_t address = 0x40, int channel = 0);
 	~PCA9685();
 	bool SetFrequency(double frequency);

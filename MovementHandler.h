@@ -7,7 +7,7 @@
 class MovementHandler
 {
 public:
-	MovementHandler();
+	MovementHandler(int pi);
 
 	MovementSignal ms;
 	bool read;

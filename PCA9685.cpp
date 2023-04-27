@@ -1,6 +1,7 @@
 #include "PCA9685.h"
 #include <cmath>
 #include <unistd.h>
+#include <pigpiod_if2.h>
 
 PCA9685::PCA9685(int pi, int bus, uint8_t address, int channel)
 {
@@ -26,7 +27,7 @@ PCA9685::PCA9685(int pi, int bus, uint8_t address, int channel)
 
 PCA9685::~PCA9685()
 {
-    Cancel();
+    
 }
 
 float PCA9685::GetFrequency()
@@ -69,8 +70,8 @@ bool PCA9685::SetDutyCycle(int channel, int usec)
     {
         //unsigned int pulseWidthValue = static_cast<unsigned int>(usec * 4096.0 / (1000000.0 / frequency));
         unsigned int pulseWidthValue = (usec * 4096.0 / (1000000.0 / frequency));
-        i2c_write_word_data(pi, handle, LED0_ON_L + 4 * channel, 0);
-        i2c_write_word_data(pi, handle, LED0_OFF_L + 4 * channel, pulseWidthValue);
+        int result = i2c_write_word_data(pi, handle, LED0_ON_L + 4 * channel, 0);
+        result = i2c_write_word_data(pi, handle, LED0_OFF_L + 4 * channel, pulseWidthValue);
     }
 
     return true;

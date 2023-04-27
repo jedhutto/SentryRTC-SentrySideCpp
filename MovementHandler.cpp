@@ -25,9 +25,9 @@ const unsigned int LED     = 26;
 const unsigned int DUTY = 1000000;
 const unsigned int FREQUENCY = 25000;
 
-MovementHandler::MovementHandler()
+MovementHandler::MovementHandler(int pi)
 {
-	this->pi = pigpio_start(NULL,NULL);
+	this->pi = pi;//pigpio_start(NULL,NULL);
 	if (pi < 0) {
 		std::cout << "Error initialising GPIO" << std::endl;
 	}
@@ -122,7 +122,7 @@ void MovementHandler::MovementLoop(bool& read, MovementSignal& ms, int &pi)
 			}
 		}
 		else {
-			if (missedMessage == 30) {
+			if (missedMessage == 60) {
 				set_PWM_dutycycle(pi, ENA_PIN, 0);
 				set_PWM_dutycycle(pi, ENB_PIN, 0);
 			}
