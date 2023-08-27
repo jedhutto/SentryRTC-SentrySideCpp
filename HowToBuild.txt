@@ -1,0 +1,33 @@
+sudo apt-get install git
+sudo apt install -y cmake
+sudo apt-get install -y libssl-dev
+
+mkdir repos
+cd repos/
+git clone https://github.com/paullouisageneau/libdatachannel.git --single-branch
+cd libdatachannel/
+git submodule update --init --recursive --depth 1
+#UPDATE CMAKE TO NEWEST OR IT MAY FAIL SAYING BUILD FOLDER NOT FOUND
+cmake -B build -DUSE_GNUTLS=0 -DUSE_NICE=0 -DCMAKE_BUILD_TYPE=Release
+cd build
+make -j2
+sudo make install
+sudo ldconfig
+
+
+sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+sudo apt install libjson-glib-dev
+
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
+sudo ldconfig
+
+sudo apt-get install libcurl4-openssl-dev
+
+git clone https://github.com/tobiaslocker/base64.git
+#move .hpp file to ./include in project
+
+

@@ -206,13 +206,13 @@ int main(int argc, char** argv) {
 					}
 					else {
 						std::cout << "No caller, waiting" << std::endl;
-						std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 					}
 				}
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(30 * 1000));
 				while (dc->isOpen()) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+					std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 				}
 
 				break;
