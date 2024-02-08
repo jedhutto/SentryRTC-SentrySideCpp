@@ -1,7 +1,7 @@
 #include "PCA9685.h"
 #include <cmath>
 #include <unistd.h>
-#include <pigpiod_if2.h>
+#include <jetgpio.h>
 
 PCA9685::PCA9685(int pi, int bus, uint8_t address, int channel)
 {
@@ -9,7 +9,7 @@ PCA9685::PCA9685(int pi, int bus, uint8_t address, int channel)
     this->bus = bus;
     this->address = address;
 
-    handle = i2c_open(pi, bus, address, NULL);
+    handle = i2cOpen(bus, 0);
 
     WriteReg(MODE1, AI | ALLCALL);
     WriteReg(MODE2, OCH | OUTDRV);
@@ -60,7 +60,7 @@ bool PCA9685::SetFrequency(double frequency)
     this->frequency = (25000000.0 / 4096.0) / (prescale + 1);
     pulseWidth = (1000000.0 / this->frequency);
 
-    i2c_write_byte_data(pi, handle, MODE2, SUBADR3);
+    i2cWriteByteData(handle, this->address,  MODE2, SUBADR3);
     return true;
 }
 
@@ -70,8 +70,8 @@ bool PCA9685::SetDutyCycle(int channel, int usec)
     {
         //unsigned int pulseWidthValue = static_cast<unsigned int>(usec * 4096.0 / (1000000.0 / frequency));
         unsigned int pulseWidthValue = (usec * 4096.0 / (1000000.0 / frequency));
-        int result = i2c_write_word_data(pi, handle, LED0_ON_L + 4 * channel, 0);
-        result = i2c_write_word_data(pi, handle, LED0_OFF_L + 4 * channel, pulseWidthValue);
+        int result = i2cWriteWordData(handle, this->address, LED0_ON_L + 4 * channel, 0);
+        result = i2cWriteWordData(handle, this->address, LED0_OFF_L + 4 * channel, pulseWidthValue);
     }
 
     return true;
@@ -117,15 +117,15 @@ bool PCA9685::SetPulseWidth(int channel, float width)
 bool PCA9685::Cancel()
 {
     SetDutyCycle(-1, 0);
-    i2c_close(pi, handle);
+    i2cClose(handle);
 }
 
 int PCA9685::WriteReg(int reg, uint8_t byte)
 {
-    return i2c_write_byte_data(pi, handle, reg, byte);
+    return i2cWriteByteData(handle, this->address, reg, byte);
 }
 
 uint8_t PCA9685::ReadReg(int reg)
 {
-    return i2c_read_byte_data(pi, handle, reg);
+    return i2cReadByteData(handle, this->address, reg);
 }

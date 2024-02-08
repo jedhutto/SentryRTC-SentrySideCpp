@@ -1,6 +1,6 @@
 #include "MovementHandler.h"
 #include <iostream>
-#include <pigpiod_if2.h>
+#include <jetgpio.h>
 #include <cstdlib>
 /*
 
@@ -15,13 +15,13 @@ pin 33 / GPIO 13 - ENB (Left)  (Hardware PWM) NOT USING HARDWARE PWM THOUGH - SO
 
 */
 
-const unsigned int ENA_PIN = 12;
-const unsigned int IN1_PIN =  4;
-const unsigned int IN2_PIN =  5;
-const unsigned int IN3_PIN = 27;
-const unsigned int IN4_PIN = 22;
-const unsigned int ENB_PIN = 13;
-const unsigned int LED     = 26;
+const unsigned int ENA_PIN = 33;
+const unsigned int IN1_PIN =  29;//13
+const unsigned int IN2_PIN = 31;//15
+const unsigned int IN3_PIN = 13;//29
+const unsigned int IN4_PIN = 15;//31
+const unsigned int ENB_PIN = 32;
+//const unsigned int LED     = 26;
 const unsigned int DUTY = 1000000;
 const unsigned int FREQUENCY = 25000;
 
@@ -32,17 +32,20 @@ MovementHandler::MovementHandler(int pi)
 		std::cout << "Error initialising GPIO" << std::endl;
 	}
 	
-	set_mode(pi, ENA_PIN, PI_OUTPUT);
-	set_mode(pi, IN1_PIN, PI_OUTPUT);
-	set_mode(pi, IN2_PIN, PI_OUTPUT);
-	set_mode(pi, IN3_PIN, PI_OUTPUT);
-	set_mode(pi, IN4_PIN, PI_OUTPUT);
-	set_mode(pi, ENB_PIN, PI_OUTPUT);
-
-	set_PWM_dutycycle(pi, ENA_PIN, 0);
-	set_PWM_dutycycle(pi, ENB_PIN, 0);
-	set_PWM_frequency(pi, ENA_PIN, FREQUENCY);
-	set_PWM_frequency(pi, ENB_PIN, FREQUENCY);
+	//set_mode(pi, ENA_PIN, PI_OUTPUT);
+	gpioSetMode(IN1_PIN, JET_OUTPUT);
+	gpioSetMode(IN2_PIN, JET_OUTPUT);
+	gpioSetMode(IN3_PIN, JET_OUTPUT);
+	gpioSetMode(IN4_PIN, JET_OUTPUT);
+	//set_mode(pi, ENB_PIN, PI_OUTPUT);
+	gpioWrite(IN1_PIN, 0);
+	gpioWrite(IN2_PIN, 0);
+	gpioWrite(IN3_PIN, 0);
+	gpioWrite(IN4_PIN, 0);
+	gpioPWM(ENA_PIN, 0);
+	gpioPWM(ENB_PIN, 0);
+	gpioSetPWMfrequency(ENA_PIN, FREQUENCY);
+	gpioSetPWMfrequency(ENB_PIN, FREQUENCY);
 
 	this->read = false;
 }
@@ -86,15 +89,15 @@ void MovementHandler::MovementLoop(bool& read, MovementSignal& ms, int &pi)
 
 
 				if (leftDirection) {
-					gpio_write(pi, IN1_PIN, 1);
-					gpio_write(pi, IN2_PIN, 0);
+					gpioWrite(IN1_PIN, 1);
+					gpioWrite(IN2_PIN, 0);
 				}
 				else {
-					gpio_write(pi, IN1_PIN, 0);
-					gpio_write(pi, IN2_PIN, 1);
+					gpioWrite(IN1_PIN, 0);
+					gpioWrite(IN2_PIN, 1);
 				}
 				auto temp = (DUTY / 127) * trackLeft;
-				set_PWM_dutycycle(pi, ENA_PIN, trackLeft * 2);
+				gpioPWM(ENA_PIN, trackLeft * 2);
 			}
 			if (true) {
 				if (trackRight >= 0) {
@@ -106,15 +109,15 @@ void MovementHandler::MovementLoop(bool& read, MovementSignal& ms, int &pi)
 				}
 
 				if (rightDirection) {
-					gpio_write(pi, IN3_PIN, 1);
-					gpio_write(pi, IN4_PIN, 0);
+					gpioWrite(IN3_PIN, 1);
+					gpioWrite(IN4_PIN, 0);
 				}
 				else {
-					gpio_write(pi, IN3_PIN, 0);
-					gpio_write(pi, IN4_PIN, 1);
+					gpioWrite(IN3_PIN, 0);
+					gpioWrite(IN4_PIN, 1);
 				}
 				auto temp = (DUTY / 127) * trackRight;
-				set_PWM_dutycycle(pi, ENB_PIN, trackRight * 2);
+				gpioPWM(ENB_PIN, trackRight * 2);
 			}
 
 			if ((0 <= ms.trackLeft && ms.trackLeft <= 127) && (0 <= ms.trackRight && ms.trackRight <= 127)) {
@@ -123,8 +126,8 @@ void MovementHandler::MovementLoop(bool& read, MovementSignal& ms, int &pi)
 		}
 		else {
 			if (missedMessage == 60) {
-				set_PWM_dutycycle(pi, ENA_PIN, 0);
-				set_PWM_dutycycle(pi, ENB_PIN, 0);
+				gpioPWM(ENA_PIN, 0);
+				gpioPWM(ENB_PIN, 0);
 			}
 			missedMessage++;
 		}

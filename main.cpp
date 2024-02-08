@@ -4,6 +4,7 @@
 #include "CameraDataChannelHandler.h"
 #include "Signal.hpp"
 #include "MovementHandler.h"
+#include <jetgpio.h>
 
 #include <chrono>
 #include <iostream>
@@ -13,6 +14,7 @@
 #include <rtc/rtc.hpp>
 #include "PCA9685.h"
 #include "ServoHandler.h"
+#include "LidarHandler.h"
 
 using std::shared_ptr;
 using std::weak_ptr;
@@ -130,7 +132,7 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 
 int main(int argc, char** argv) {
 	//Setup Azure Comms
-	int pi = pigpio_start(NULL, NULL);
+	int pi = gpioInitialise();
 	PCA9685 pca9685 = PCA9685(pi,1, 0x40,0);
 	pca9685.SetDutyCyclePercent(0, 0);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
@@ -155,7 +157,7 @@ int main(int argc, char** argv) {
 	ServoHandler servoHandler = ServoHandler(pi, 0, pca9685);
 	MovementHandler movementHandler = MovementHandler(pi);
 	CameraDataChannelHandler cameraHandler;
-
+	LidarHandler lidarHandler = LidarHandler();
 
 	bool exit = false;
 	while (!exit) {

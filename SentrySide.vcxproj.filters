@@ -17,6 +17,7 @@
     <ClCompile Include="MovementHandler.cpp" />
     <ClCompile Include="PCA9685.cpp" />
     <ClCompile Include="ServoHandler.cpp" />
+    <ClCompile Include="LidarHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProjectStructures.h" />
@@ -38,6 +39,7 @@
     <ClInclude Include="ServoSignal.hpp">
       <Filter>Signals</Filter>
     </ClInclude>
+    <ClInclude Include="LidarHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Signals">

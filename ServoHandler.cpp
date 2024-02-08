@@ -1,5 +1,4 @@
 #include "ServoHandler.h"
-#include <pigpiod_if2.h>
 #include <iostream>
 
 ServoHandler::ServoHandler(int pi, int channel, PCA9685 pca9685)
