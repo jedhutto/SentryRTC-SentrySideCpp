@@ -49,7 +49,7 @@ void LidarHandler::setupLidar()
 	channel = new sl::Result<sl::IChannel*>(sl::createSerialPortChannel("/dev/ttyUSB0", 115200));
 	sl::ILidarDriver* drv = *sl::createLidarDriver();
 	if (!drv) {
-		fprintf(stderr, "insufficent memory, exit\n");
+		fprintf(stderr, "insufficient memory, exit\n");
 		exit(-2);
 	}
 	sl_lidar_response_device_info_t devinfo;
