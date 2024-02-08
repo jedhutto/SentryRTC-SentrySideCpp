@@ -21,7 +21,7 @@ using std::weak_ptr;
 template <class T> weak_ptr<T> make_weak_ptr(shared_ptr<T> ptr) { return ptr; }
 
 int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
-	CameraDataChannelHandler& cameraHandler, MovementHandler& movementHandler, ServoHandler& servoHandler,
+	CameraDataChannelHandler& cameraHandler, MovementHandler& movementHandler, ServoHandler& servoHandler, LidarHandler& lidarHandler,
 	TableStorageEntry& answerTableEntry, std::shared_ptr<rtc::Track>& track,
 	std::shared_ptr<rtc::PeerConnection>& pc, std::shared_ptr<rtc::DataChannel>& dc) {
 
@@ -89,6 +89,8 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 		answerTableEntry = TableStorageEntry("answerer");
 		answerTableEntry.status = "standby";
 		HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
+		
+		lidarHandler;
 
 		std::cout << "[Got a DataChannel with label: " << _dc->label() << "]" << std::endl;
 
@@ -157,7 +159,7 @@ int main(int argc, char** argv) {
 	ServoHandler servoHandler = ServoHandler(pi, 0, pca9685);
 	MovementHandler movementHandler = MovementHandler(pi);
 	CameraDataChannelHandler cameraHandler;
-	LidarHandler lidarHandler = LidarHandler();
+	LidarHandler lidarHandler;
 
 	bool exit = false;
 	while (!exit) {
@@ -180,7 +182,7 @@ int main(int argc, char** argv) {
 			}
 			case 1: {
 				pc = std::make_shared<rtc::PeerConnection>(config);
-				ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, servoHandler, answerTableEntry, track, pc, dc);
+				ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, servoHandler, lidarHandler, answerTableEntry, track, pc, dc);
 				while (getPeer) {
 					//Check if there is an offer available
 					HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.GET, TableStorageEntry("caller"));
