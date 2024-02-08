@@ -4,6 +4,7 @@
 #include "CameraDataChannelHandler.h"
 #include "Signal.hpp"
 #include "MovementHandler.h"
+#include <jetgpio.h>
 
 #include <chrono>
 #include <iostream>
@@ -11,13 +12,16 @@
 #include <thread>
 #include <cstring>
 #include <rtc/rtc.hpp>
+#include "PCA9685.h"
+#include "ServoHandler.h"
+#include "LidarHandler.h"
 
 using std::shared_ptr;
 using std::weak_ptr;
 template <class T> weak_ptr<T> make_weak_ptr(shared_ptr<T> ptr) { return ptr; }
 
 int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
-	CameraDataChannelHandler& cameraHandler, MovementHandler& movementHandler,
+	CameraDataChannelHandler& cameraHandler, MovementHandler& movementHandler, ServoHandler& servoHandler, LidarHandler& lidarHandler,
 	TableStorageEntry& answerTableEntry, std::shared_ptr<rtc::Track>& track,
 	std::shared_ptr<rtc::PeerConnection>& pc, std::shared_ptr<rtc::DataChannel>& dc) {
 
@@ -81,9 +85,12 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 
 	pc->onDataChannel([&](shared_ptr<rtc::DataChannel> _dc) {
 		movementHandler.start();
+		servoHandler.start();
 		answerTableEntry = TableStorageEntry("answerer");
 		answerTableEntry.status = "standby";
 		HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
+		
+		lidarHandler;
 
 		std::cout << "[Got a DataChannel with label: " << _dc->label() << "]" << std::endl;
 
@@ -95,6 +102,7 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 			if (cameraHandler.IsRunning()) {
 				cameraHandler.StopCamera();
 			}
+			servoHandler.~ServoHandler();
 		});
 
 
@@ -111,6 +119,10 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 				std::memcpy(&movementHandler.ms, ((std::vector<std::byte>)std::get<std::vector<std::byte>>(data)).data(), sizeof(MovementSignal));
 				movementHandler.read = true;
 				break;
+			case Signal::CameraLook:
+				std::memcpy(&servoHandler.ss, ((std::vector<std::byte>)std::get<std::vector<std::byte>>(data)).data(), sizeof(ServoSignal));
+				servoHandler.read = true;
+				break;
 			case -1:
 				std::cout << "Signal Error" << std::endl;
 			}
@@ -122,6 +134,17 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 
 int main(int argc, char** argv) {
 	//Setup Azure Comms
+	int pi = gpioInitialise();
+	PCA9685 pca9685 = PCA9685(pi,1, 0x40,0);
+	pca9685.SetDutyCyclePercent(0, 0);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
+	pca9685.SetDutyCyclePercent(0, .5);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
+	pca9685.SetDutyCyclePercent(0, 1);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
+	pca9685.SetDutyCyclePercent(0, .5);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/4));
+
 	TableStorageEntry answerTableEntry = TableStorageEntry("answerer");
 	answerTableEntry.status = "standby";
 
@@ -133,9 +156,10 @@ int main(int argc, char** argv) {
 	std::shared_ptr<rtc::Track> track;
 	
 	TableStorageRequestHandler tableStorageRequestHandler;
-	MovementHandler movementHandler = MovementHandler();
+	ServoHandler servoHandler = ServoHandler(pi, 0, pca9685);
+	MovementHandler movementHandler = MovementHandler(pi);
 	CameraDataChannelHandler cameraHandler;
-
+	LidarHandler lidarHandler;
 
 	bool exit = false;
 	while (!exit) {
@@ -158,7 +182,7 @@ int main(int argc, char** argv) {
 			}
 			case 1: {
 				pc = std::make_shared<rtc::PeerConnection>(config);
-				ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, answerTableEntry, track, pc, dc);
+				ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, servoHandler, lidarHandler, answerTableEntry, track, pc, dc);
 				while (getPeer) {
 					//Check if there is an offer available
 					HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.GET, TableStorageEntry("caller"));
@@ -186,13 +210,13 @@ int main(int argc, char** argv) {
 					}
 					else {
 						std::cout << "No caller, waiting" << std::endl;
-						std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 					}
 				}
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(30 * 1000));
 				while (dc->isOpen()) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+					std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 				}
 
 				break;

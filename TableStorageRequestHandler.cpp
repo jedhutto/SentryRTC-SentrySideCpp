@@ -12,7 +12,6 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
-#include <filesystem>
 
 TableStorageRequestHandler::TableStorageRequestHandler()
 {
@@ -155,7 +154,7 @@ HttpObject TableStorageRequestHandler::SendRequest(Verb verb, TableStorageEntry 
 
 void TableStorageRequestHandler::getAzureConfiguration()
 {
-	std::ifstream azureConfigTxt("/home/pi/azure_configuration.txt");
+	std::ifstream azureConfigTxt("/home/jetson/azure_configuration.txt");
 	if (azureConfigTxt.is_open())
 	{
 		std::getline(azureConfigTxt, accountName);
@@ -165,7 +164,7 @@ void TableStorageRequestHandler::getAzureConfiguration()
 	}
 	else 
 	{
-		throw std::invalid_argument("azure_configuration.txt not found at: " + std::string("/home/pi") + std::string(std::filesystem::current_path()));
+		throw std::invalid_argument("azure_configuration.txt not found at: " + std::string("/home/jetson"));
 	}
 }
 

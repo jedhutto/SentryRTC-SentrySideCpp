@@ -61,6 +61,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>/home/jetson/projects</RemoteRootDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -92,6 +93,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <AdditionalSourcesToCopyMapping>
     </AdditionalSourcesToCopyMapping>
+    <EnableIncrementalBuild>WithNinja</EnableIncrementalBuild>
+    <RemoteDeployDir>/home/jetson/projects/$(ProjectName)</RemoteDeployDir>
+    <MultiProcNumber>4</MultiProcNumber>
+    <RemoteCompileLocalCopyObjectFiles>false</RemoteCompileLocalCopyObjectFiles>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
@@ -142,11 +147,14 @@
   <ItemGroup>
     <ClCompile Include="CameraDataChannelHandler.cpp" />
     <ClCompile Include="ContolDataChannelHandler.cpp" />
+    <ClCompile Include="LidarHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MessageSignal.hpp" />
     <ClCompile Include="MovementHandler.cpp" />
+    <ClCompile Include="PCA9685.cpp" />
     <ClCompile Include="ProjectStructures.cpp" />
     <ClCompile Include="RtcHandler.cpp" />
+    <ClCompile Include="ServoHandler.cpp" />
     <ClCompile Include="Signal.hpp" />
     <ClCompile Include="TableStorageEntry.cpp" />
     <ClCompile Include="TableStorageRequestHandler.cpp" />
@@ -155,11 +163,15 @@
     <ClInclude Include="base64.hpp" />
     <ClInclude Include="CameraDataChannelHandler.h" />
     <ClInclude Include="ContolDataChannelHandler.h" />
+    <ClInclude Include="LidarHandler.h" />
     <ClInclude Include="MovementConfigSignal.hpp" />
     <ClInclude Include="MovementHandler.h" />
     <ClInclude Include="MovementSignal.hpp" />
+    <ClInclude Include="PCA9685.h" />
     <ClInclude Include="ProjectStructures.h" />
     <ClInclude Include="RtcHandler.h" />
+    <ClInclude Include="ServoHandler.h" />
+    <ClInclude Include="ServoSignal.hpp" />
     <ClInclude Include="TableStorageEntry.h" />
     <ClInclude Include="TableStorageRequestHandler.h" />
   </ItemGroup>
@@ -213,16 +225,18 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/include/gstreamer-1.0;/usr/include/glib-2.0;/usr/lib/arm-linux-gnueabihf/glib-2.0/include;/usr/local/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <CppLanguageStandard>c++17</CppLanguageStandard>
+      <AdditionalIncludeDirectories>/usr/include/gstreamer-1.0;/usr/include/glib-2.0;/usr/lib/arm-linux-gnueabihf/glib-2.0/include;/usr/local/include;/usr/lib/aarch64-linux-gnu;/usr/lib/aarch64-linux-gnu/glib-2.0/include;/home/jetson/repos/rplidar_sdk/sdk/include;/home/jetson/repos/rplidar_sdk/sdk/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CppLanguageStandard>gnu++17</CppLanguageStandard>
       <AdditionalOptions>-I/usr/include/glib-2.0 -I/usr/lib/aarch64-linux-gnu/glib-2.0/include -lglib-2.0 -l/usr/local/include %(AdditionalOptions)</AdditionalOptions>
-      <CLanguageStandard>gnu11</CLanguageStandard>
+      <CLanguageStandard>c11</CLanguageStandard>
       <OmitFramePointers>false</OmitFramePointers>
       <Optimization>Disabled</Optimization>
+      <Verbose>true</Verbose>
     </ClCompile>
     <Link>
-      <SharedLibrarySearchPath>/usr/local/lib;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
-      <LibraryDependencies>ssl;crypto;curl;gstreamer-1.0;gobject-2.0;glib-2.0;gstapp-1.0;pthread;datachannel;pigpiod_if2;rt</LibraryDependencies>
+      <SharedLibrarySearchPath>/usr/local/lib;/usr/lib/aarch64-linux-gnu;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <LibraryDependencies>ssl;crypto;curl;gstreamer-1.0;gobject-2.0;glib-2.0;gstapp-1.0;pthread;datachannel;rt;jetgpio;sl_lidar_sdk</LibraryDependencies>
+      <AdditionalLibraryDirectories>/home/jetson/repos/rplidar_sdk/output/Linux/Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">

@@ -15,6 +15,9 @@
       <Filter>Signals</Filter>
     </ClCompile>
     <ClCompile Include="MovementHandler.cpp" />
+    <ClCompile Include="PCA9685.cpp" />
+    <ClCompile Include="ServoHandler.cpp" />
+    <ClCompile Include="LidarHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProjectStructures.h" />
@@ -31,6 +34,12 @@
       <Filter>Signals</Filter>
     </ClInclude>
     <ClInclude Include="base64.hpp" />
+    <ClInclude Include="PCA9685.h" />
+    <ClInclude Include="ServoHandler.h" />
+    <ClInclude Include="ServoSignal.hpp">
+      <Filter>Signals</Filter>
+    </ClInclude>
+    <ClInclude Include="LidarHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Signals">
