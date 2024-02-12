@@ -3,7 +3,7 @@
 #include "LidarHandler.h";
 #include <chrono>
 #include <thread>
-
+#define PI 3.14159265
 LidarHandler::LidarHandler()
 {
 	startLidar = false;
@@ -16,14 +16,14 @@ LidarHandler::~LidarHandler()
 	this->lidarTask.join();
 }
 
-void LidarHandler::start(shared_ptr<rtc::Channel> & rtcChannel)
+void LidarHandler::start(shared_ptr<rtc::DataChannel> & dataChannel)
 {
 	startLidar = true;
-	this->lidarTask = std::thread(&LidarHandler::setupLidar, std::ref(rtcChannel), std::ref(startLidar));
+	this->lidarTask = std::thread(&LidarHandler::setupLidar, std::ref(dataChannel), std::ref(startLidar));
 	this->lidarTask.detach();
 }
 
-void LidarHandler::setupLidar()
+void LidarHandler::setupLidar(shared_ptr<rtc::DataChannel> dataChannel, bool& startLidar)
 {
 	while (!startLidar) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -85,30 +85,23 @@ void LidarHandler::setupLidar()
 		, (int)devinfo.hardware_version);
 
 	drv->setMotorSpeed(0);
-	drv->startScan(0, 1);
-
+	sl::LidarScanMode current_scan_mode;
+	drv->startScan(0, 1, 0, &current_scan_mode);
+	
+	size_t nodeCount = 8192;
+	LidarDataSignal lidarData = LidarDataSignal();
+	sl_lidar_response_measurement_node_hq_t rawLidarData[nodeCount];
+	size_t test = sizeof(lidarData);
 	while (startLidar) {
-		sl_lidar_response_measurement_node_hq_t nodes[8192];
-		size_t count = (int)(sizeof(nodes) / sizeof(nodes[0]));
+		op_result = drv->grabScanDataHq(rawLidarData, nodeCount);
+		int start_node = 0, end_node = 0;
+		int i = 0;
 
-		op_result = drv->grabScanDataHq(nodes, count);
-
-		if (SL_IS_OK(op_result)) {
-			drv->ascendScanData(nodes, count);
-			//for (int pos = 0; pos < (int)count; ++pos) {
-			//	/*printf("%s theta: %03.2f Dist: %08.2f Q: %d \n",
-			//		(nodes[pos].flag & SL_LIDAR_RESP_HQ_FLAG_SYNCBIT) ? "S " : "  ",
-			//		(nodes[pos].angle_z_q14 * 90.f) / 16384.f,
-			//		nodes[pos].dist_mm_q2 / 4.0f,
-			//		nodes[pos].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);*/
-			//}
+		if (SL_IS_OK(op_result) && dataChannel->isOpen()) {
+			int validCount = convertRawDataToCoordinates(rawLidarData, lidarData.LidarData, nodeCount);
+			dataChannel->send(reinterpret_cast<const std::byte*>(&lidarData), test - sizeof(lidarData.LidarData[0]) * validCount);
 		}
-
-		if (0) {
-			break;
-		}
-
-
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 	drv->stop();
 
@@ -123,13 +116,31 @@ void LidarHandler::setupLidar()
 	return;
 }
 
+int LidarHandler::convertRawDataToCoordinates(sl_lidar_response_measurement_node_hq_t* node, LidarDataCoordinate* coords, int count)
+{
+	int i = 0, 
+		skipped = 0;
+	while (i < count) {
+		if (node[i].dist_mm_q2 == 0) {
+			skipped++;
+			i++;
+			continue;
+		}
+		coords[i - skipped].x = -1.0 * (node[i].dist_mm_q2 * cos((((node[i].angle_z_q14) / (16384.0*4)) * 360.0 + 142.5) * PI / 180.0));
+		coords[i - skipped].y = (node[i].dist_mm_q2 * sin((((node[i].angle_z_q14) / (16384.0*4)) * 360.0 + 142.5) * PI / 180.0));
+
+		coords[i - skipped].isEnd = false;
+		i++;
+	}
+	coords[i - skipped - 1].isEnd = true;
+	return i - skipped;
+}
+
 void LidarHandler::stopLidar()
 {
-	// Stop the lidar
 }
 
 void LidarHandler::getLidarData()
 {
-	// Get the lidar data
 }
 

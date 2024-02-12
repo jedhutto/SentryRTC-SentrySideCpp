@@ -90,12 +90,12 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 		answerTableEntry.status = "standby";
 		HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
 		
-		lidarHandler;
+		dc = _dc;
+		lidarHandler.start(dc);
 
 		std::cout << "[Got a DataChannel with label: " << _dc->label() << "]" << std::endl;
 
 
-		dc = _dc;
 
 		dc->onClosed([&]() {
 			std::cout << "[DataChannel closed: " << dc->label() << "]" << std::endl;
