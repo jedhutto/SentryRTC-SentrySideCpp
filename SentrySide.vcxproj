@@ -231,7 +231,7 @@
       <AdditionalOptions>-I/usr/include/glib-2.0 -I/usr/lib/aarch64-linux-gnu/glib-2.0/include -lglib-2.0 -l/usr/local/include %(AdditionalOptions)</AdditionalOptions>
       <CLanguageStandard>c11</CLanguageStandard>
       <OmitFramePointers>false</OmitFramePointers>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <Verbose>true</Verbose>
     </ClCompile>
     <Link>

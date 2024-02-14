@@ -92,6 +92,7 @@ void LidarHandler::setupLidar(shared_ptr<rtc::DataChannel> dataChannel, bool& st
 	LidarDataSignal lidarData = LidarDataSignal();
 	sl_lidar_response_measurement_node_hq_t rawLidarData[nodeCount];
 	size_t test = sizeof(lidarData);
+	std::chrono::milliseconds(10000);
 	while (startLidar) {
 		op_result = drv->grabScanDataHq(rawLidarData, nodeCount);
 		int start_node = 0, end_node = 0;
@@ -101,7 +102,7 @@ void LidarHandler::setupLidar(shared_ptr<rtc::DataChannel> dataChannel, bool& st
 			int validCount = convertRawDataToCoordinates(rawLidarData, lidarData.LidarData, nodeCount);
 			dataChannel->send(reinterpret_cast<const std::byte*>(&lidarData), test - sizeof(lidarData.LidarData[0]) * validCount);
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 	drv->stop();
 
