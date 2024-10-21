@@ -4,8 +4,7 @@
 class ServoSignal : Signal
 {
 public:
-	int16_t pulseWidth; 
-	int16_t channel; 
+	int16_t pulseWidths[5];
 	ServoSignal() {
 		id = this->CameraLook;
 	}

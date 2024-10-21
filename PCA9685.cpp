@@ -77,6 +77,13 @@ bool PCA9685::SetDutyCycle(int channel, int usec)
     return true;
 }
 
+int16_t PCA9685::GetDutyCycle(int channel)
+{
+	int on = i2cReadWordData(handle, this->address, LED0_ON_L + 4 * channel);
+	int off = i2cReadWordData(handle, this->address, LED0_OFF_L + 4 * channel);
+	return off;
+}
+
 bool PCA9685::SetDutyCyclePercent(int channel, float percent)
 {
     if (0 <= percent && percent <= 1) 

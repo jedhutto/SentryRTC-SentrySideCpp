@@ -10,6 +10,7 @@ public:
 	bool SetFrequency(double frequency);
 	float GetFrequency();
 	bool SetDutyCycle(int channel, int usec);
+	int16_t GetDutyCycle(int channel);
 	bool SetDutyCyclePercent(int channel, float percent);
 	bool SetPulseWidth(int channel, float width);
 	bool Cancel();

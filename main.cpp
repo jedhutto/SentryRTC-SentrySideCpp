@@ -130,13 +130,39 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler, Camera
 int main(int argc, char** argv) {
 	int pi = gpioInitialise();
 	PCA9685 pca9685 = PCA9685(pi,1, 0x40,0);
-	pca9685.SetDutyCyclePercent(0, 0);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
-	pca9685.SetDutyCyclePercent(0, .5);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
-	pca9685.SetDutyCyclePercent(0, 1);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
-	pca9685.SetDutyCyclePercent(0, .5);
+	int servo0 = 0,
+		servo1 = 1,
+		servo2 = 2,
+		servo3 = 3,
+		servo4 = 4;
+	//pca9685.SetDutyCyclePercent(servo0, .5);
+	//pca9685.SetDutyCyclePercent(servo1, .5);
+	//pca9685.SetDutyCyclePercent(servo2, .5);
+	//pca9685.SetDutyCyclePercent(servo3, .5);
+	//pca9685.SetDutyCyclePercent(servo4, .5);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
+	//pca9685.SetDutyCyclePercent(servo1, 0);
+	//pca9685.SetDutyCyclePercent(servo2, 1);
+	//pca9685.SetDutyCyclePercent(servo3, 0);
+	//pca9685.SetDutyCyclePercent(servo4, 0);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
+	////pca9685.SetDutyCyclePercent(servo0, .5);
+	//pca9685.SetDutyCyclePercent(servo1, .5);
+	//pca9685.SetDutyCyclePercent(servo2, .5);
+	//pca9685.SetDutyCyclePercent(servo3, .5);
+	//pca9685.SetDutyCyclePercent(servo4, .5);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
+	////pca9685.SetDutyCyclePercent(servo0, .75);
+	//pca9685.SetDutyCyclePercent(servo1, 1);
+	//pca9685.SetDutyCyclePercent(servo2, 0);
+	//pca9685.SetDutyCyclePercent(servo3, 1);
+	//pca9685.SetDutyCyclePercent(servo4, 1);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
+	pca9685.SetDutyCyclePercent(servo0, .5);
+	pca9685.SetDutyCyclePercent(servo1, .5);
+	pca9685.SetDutyCyclePercent(servo2, .5);
+	pca9685.SetDutyCyclePercent(servo3, .5);
+	pca9685.SetDutyCyclePercent(servo4, .5);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/4));
 
 	TableStorageEntry answerTableEntry = TableStorageEntry("answerer");
@@ -196,9 +222,9 @@ int main(int argc, char** argv) {
 				answerTableEntry.status = "answering";
 				result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
 				
-				std::this_thread::sleep_for(std::chrono::milliseconds(30 * 1000));
+				std::this_thread::sleep_for(std::chrono::milliseconds(15 * 1000));
 				while (dc->isOpen()) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				}
 				exit = true;
 				//new (&servoHandler) ServoHandler(pi, 0, pca9685);
@@ -207,7 +233,7 @@ int main(int argc, char** argv) {
 			}
 			else {
 				std::cout << "No caller, waiting - " << i++ << std::endl;
-				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 			}
 
 		}

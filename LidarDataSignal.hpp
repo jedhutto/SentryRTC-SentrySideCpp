@@ -6,7 +6,7 @@
 typedef struct LidarDataCoordinate {
 	float x;
 	float y;
-	bool isEnd = false;
+	//bool isEnd = false;
 } LidarDataCoordinate;
 
 class LidarDataSignal : Signal
