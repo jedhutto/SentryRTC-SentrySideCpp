@@ -63,7 +63,7 @@ LidarHandler::LidarHandler()
 
 
 
-	LidarHandler::driver->setMotorSpeed(0);
+ 	LidarHandler::driver->setMotorSpeed(0);
 
 	startLidar = false;
 }
@@ -129,10 +129,8 @@ int LidarHandler::convertRawDataToCoordinates(sl_lidar_response_measurement_node
 		coords[i - skipped].x = -1.0 * (node[i].dist_mm_q2 * cos((((node[i].angle_z_q14) / (16384.0*4)) * 360.0 + 142.5) * PI / 180.0));
 		coords[i - skipped].y = (node[i].dist_mm_q2 * sin((((node[i].angle_z_q14) / (16384.0*4)) * 360.0 + 142.5) * PI / 180.0));
 
-		//coords[i - skipped].isEnd = false;
 		i++;
 	}
-	//coords[i - skipped - 1].isEnd = true;
 	return i - skipped;
 }
 

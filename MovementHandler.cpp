@@ -1,58 +1,21 @@
 #include "MovementHandler.h"
 #include <iostream>
-#include <jetgpio.h>
 #include <cstdlib>
-/*
 
-motor driver pinouts
-
-pin 32 / GPIO 12 - ENA (Right) (Hardware PWM) NOT USING HARDWARE PWM THOUGH - SOMETHING'S BROKEN
-pin  7 / GPIO  4 - IN1 (Right) (Up/Down) 
-pin 29 / GPIO  5 - IN2 (Right) (Up/Down) 
-pin 13 / GPIO 27 - IN3 (Left)  (Up/Down) 
-pin 15 / GPIO 22 - IN4 (Left)  (Up/Down) 
-pin 33 / GPIO 13 - ENB (Left)  (Hardware PWM) NOT USING HARDWARE PWM THOUGH - SOMETHING'S BROKEN
-
-*/
-
-const unsigned int ENA_PIN = 33;
-const unsigned int IN1_PIN =  29;//13
-const unsigned int IN2_PIN = 31;//15
-const unsigned int IN3_PIN = 13;//29
-const unsigned int IN4_PIN = 15;//31
-const unsigned int ENB_PIN = 32;
-//const unsigned int LED     = 26;
-const unsigned int DUTY = 1000000;
-const unsigned int FREQUENCY = 25000;
-
-MovementHandler::MovementHandler(int pi)
+MovementHandler::MovementHandler(int pi, PCA9685* motorDriver)
 {
-	this->pi = pi;//pigpio_start(NULL,NULL);
+	this->pi = pi;
+	this->motorDriver = motorDriver;
 	if (pi < 0) {
 		std::cout << "Error initialising GPIO" << std::endl;
 	}
-	
-	//set_mode(pi, ENA_PIN, PI_OUTPUT);
-	gpioSetMode(IN1_PIN, JET_OUTPUT);
-	gpioSetMode(IN2_PIN, JET_OUTPUT);
-	gpioSetMode(IN3_PIN, JET_OUTPUT);
-	gpioSetMode(IN4_PIN, JET_OUTPUT);
-	//set_mode(pi, ENB_PIN, PI_OUTPUT);
-	gpioWrite(IN1_PIN, 0);
-	gpioWrite(IN2_PIN, 0);
-	gpioWrite(IN3_PIN, 0);
-	gpioWrite(IN4_PIN, 0);
-	gpioPWM(ENA_PIN, 0);
-	gpioPWM(ENB_PIN, 0);
-	gpioSetPWMfrequency(ENA_PIN, FREQUENCY);
-	gpioSetPWMfrequency(ENB_PIN, FREQUENCY);
 
 	this->read = false;
 }
 
 void MovementHandler::start()
 {
-	this->mhThread = std::thread(&MovementHandler::MovementLoop, std::ref(read), std::ref(ms), std::ref(pi));
+	this->mhThread = std::thread(&MovementHandler::MovementLoop, std::ref(read), std::ref(ms), std::ref(pi), motorDriver);
 	this->mhThread.detach();
 }
 
@@ -65,8 +28,52 @@ void MovementHandler::setConfiguration(MovementConfigSignal)
 {
 }
 
-void MovementHandler::MovementLoop(bool& read, MovementSignal& ms, int &pi)
+void MovementHandler::MovementLoop(bool& read, MovementSignal& ms, int &pi, PCA9685* motorDriver)
 {
+	const int frontLeftIn1Channel  = 6;
+	const int frontLeftIn2Channel  = 7;
+	const int rearLeftIn1Channel   = 5;
+	const int rearLeftIn2Channel   = 4;
+	const int frontRightIn1Channel = 3;
+	const int frontRightIn2Channel = 2;
+	const int rearRightIn1Channel  = 0;
+	const int rearRightIn2Channel  = 1;
+
+	const int maxDutyCycle = 4095;
+
+	auto setSideOutput = [motorDriver](int firstIn1, int firstIn2, int secondIn1, int secondIn2, bool forward, int dutyCycle)
+		{
+			if (motorDriver == nullptr)
+			{
+				return;
+			}
+
+			int in1Duty = forward ? dutyCycle : 0;
+			int in2Duty = forward ? 0 : dutyCycle;
+
+			motorDriver->SetRawDutyCycle(firstIn1, in1Duty);
+			motorDriver->SetRawDutyCycle(firstIn2, in2Duty);
+			motorDriver->SetRawDutyCycle(secondIn1, in1Duty);
+			motorDriver->SetRawDutyCycle(secondIn2, in2Duty);
+		};
+
+	auto stopAllMotors = [motorDriver, frontLeftIn1Channel, frontLeftIn2Channel, rearLeftIn1Channel, rearLeftIn2Channel, frontRightIn1Channel, frontRightIn2Channel, rearRightIn1Channel, rearRightIn2Channel]()
+		{
+			if (motorDriver == nullptr)
+			{
+				return;
+			}
+
+			motorDriver->SetRawDutyCycle(frontLeftIn1Channel, 0);
+			motorDriver->SetRawDutyCycle(frontLeftIn2Channel, 0);
+			motorDriver->SetRawDutyCycle(rearLeftIn1Channel, 0);
+			motorDriver->SetRawDutyCycle(rearLeftIn2Channel, 0);
+			motorDriver->SetRawDutyCycle(frontRightIn1Channel, 0);
+			motorDriver->SetRawDutyCycle(frontRightIn2Channel, 0);
+			motorDriver->SetRawDutyCycle(rearRightIn1Channel, 0);
+			motorDriver->SetRawDutyCycle(rearRightIn2Channel, 0);
+		};
+
 	bool leftDirection = true,
 		rightDirection = true;
 	int missedMessage = 0;
@@ -78,56 +85,31 @@ void MovementHandler::MovementLoop(bool& read, MovementSignal& ms, int &pi)
 			int16_t trackLeft = ms.trackLeft - 127;
 			int16_t trackRight = ms.trackRight - 127;
 
-			if (true) {
-				if (trackLeft >= 0) {
-					leftDirection = true;
-				}
-				else {
-					leftDirection = false;
-					trackLeft = abs(trackLeft);
-				}
-
-
-				if (leftDirection) {
-					gpioWrite(IN1_PIN, 1);
-					gpioWrite(IN2_PIN, 0);
-				}
-				else {
-					gpioWrite(IN1_PIN, 0);
-					gpioWrite(IN2_PIN, 1);
-				}
-				auto temp = (DUTY / 127) * trackLeft;
-				gpioPWM(ENA_PIN, trackLeft * 2);
+			if (trackLeft >= 0) {
+				leftDirection = true;
 			}
-			if (true) {
-				if (trackRight >= 0) {
-					rightDirection = true;
-				}
-				else {
-					rightDirection = false;
-					trackRight = abs(trackRight);
-				}
-
-				if (rightDirection) {
-					gpioWrite(IN3_PIN, 1);
-					gpioWrite(IN4_PIN, 0);
-				}
-				else {
-					gpioWrite(IN3_PIN, 0);
-					gpioWrite(IN4_PIN, 1);
-				}
-				auto temp = (DUTY / 127) * trackRight;
-				gpioPWM(ENB_PIN, trackRight * 2);
+			else {
+				leftDirection = false;
+				trackLeft = abs(trackLeft);
 			}
 
-			if ((0 <= ms.trackLeft && ms.trackLeft <= 127) && (0 <= ms.trackRight && ms.trackRight <= 127)) {
-				//TODO: Am I missing something here? Why'd I leave this blank??
+			int leftDutyCycle = (maxDutyCycle * trackLeft) / 127;
+			setSideOutput(frontLeftIn1Channel, frontLeftIn2Channel, rearLeftIn1Channel, rearLeftIn2Channel, leftDirection, leftDutyCycle);
+
+			if (trackRight >= 0) {
+				rightDirection = true;
 			}
+			else {
+				rightDirection = false;
+				trackRight = abs(trackRight);
+			}
+
+			int rightDutyCycle = (maxDutyCycle * trackRight) / 127;
+			setSideOutput(frontRightIn1Channel, frontRightIn2Channel, rearRightIn1Channel, rearRightIn2Channel, rightDirection, rightDutyCycle);
 		}
 		else {
 			if (missedMessage == 60) {
-				gpioPWM(ENA_PIN, 0);
-				gpioPWM(ENB_PIN, 0);
+				stopAllMotors();
 			}
 			missedMessage++;
 		}

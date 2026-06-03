@@ -129,35 +129,16 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler, Camera
 
 int main(int argc, char** argv) {
 	int pi = gpioInitialise();
-	PCA9685 pca9685 = PCA9685(pi,1, 0x40,0);
+	int bus = 1;
+	int handle = i2cOpen(bus, 0);
+	PCA9685 pca9685 = PCA9685(pi,1, handle, 0x40,0);
+	PCA9685 motorPca9685 = PCA9685(pi, 1, handle, 0x41, 0);
+	motorPca9685.SetFrequency(600);
 	int servo0 = 0,
 		servo1 = 1,
 		servo2 = 2,
 		servo3 = 3,
 		servo4 = 4;
-	//pca9685.SetDutyCyclePercent(servo0, .5);
-	//pca9685.SetDutyCyclePercent(servo1, .5);
-	//pca9685.SetDutyCyclePercent(servo2, .5);
-	//pca9685.SetDutyCyclePercent(servo3, .5);
-	//pca9685.SetDutyCyclePercent(servo4, .5);
-	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
-	//pca9685.SetDutyCyclePercent(servo1, 0);
-	//pca9685.SetDutyCyclePercent(servo2, 1);
-	//pca9685.SetDutyCyclePercent(servo3, 0);
-	//pca9685.SetDutyCyclePercent(servo4, 0);
-	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
-	////pca9685.SetDutyCyclePercent(servo0, .5);
-	//pca9685.SetDutyCyclePercent(servo1, .5);
-	//pca9685.SetDutyCyclePercent(servo2, .5);
-	//pca9685.SetDutyCyclePercent(servo3, .5);
-	//pca9685.SetDutyCyclePercent(servo4, .5);
-	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
-	////pca9685.SetDutyCyclePercent(servo0, .75);
-	//pca9685.SetDutyCyclePercent(servo1, 1);
-	//pca9685.SetDutyCyclePercent(servo2, 0);
-	//pca9685.SetDutyCyclePercent(servo3, 1);
-	//pca9685.SetDutyCyclePercent(servo4, 1);
-	//std::this_thread::sleep_for(std::chrono::milliseconds(2 * 1000));
 	pca9685.SetDutyCyclePercent(servo0, .5);
 	pca9685.SetDutyCyclePercent(servo1, .5);
 	pca9685.SetDutyCyclePercent(servo2, .5);
@@ -177,7 +158,7 @@ int main(int argc, char** argv) {
 	
 	TableStorageRequestHandler tableStorageRequestHandler;
 	ServoHandler servoHandler = ServoHandler(pi, 0, pca9685);
-	MovementHandler movementHandler = MovementHandler(pi);
+	MovementHandler movementHandler = MovementHandler(pi, &motorPca9685);
 	CameraDataChannelHandler cameraHandler;
 	LidarHandler lidarHandler = LidarHandler();
 
