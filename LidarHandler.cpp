@@ -3,32 +3,9 @@
 #include "LidarHandler.h";
 #include <chrono>
 #include <thread>
-
+#define PI 3.14159265
 LidarHandler::LidarHandler()
 {
-	startLidar = false;
-}
-
-LidarHandler::~LidarHandler()
-{
-	startLidar = false;
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	this->lidarTask.join();
-}
-
-void LidarHandler::start(shared_ptr<rtc::Channel> & rtcChannel)
-{
-	startLidar = true;
-	this->lidarTask = std::thread(&LidarHandler::setupLidar, std::ref(rtcChannel), std::ref(startLidar));
-	this->lidarTask.detach();
-}
-
-void LidarHandler::setupLidar()
-{
-	while (!startLidar) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
-
 	sl::Result<sl::IChannel*>* channel;
 	sl::ILidarDriver* lidar;
 	const char* opt_is_channel = NULL;
@@ -47,8 +24,8 @@ void LidarHandler::setupLidar()
 		"Version: %s\n", SL_LIDAR_SDK_VERSION);
 
 	channel = new sl::Result<sl::IChannel*>(sl::createSerialPortChannel("/dev/ttyUSB0", 115200));
-	sl::ILidarDriver* drv = *sl::createLidarDriver();
-	if (!drv) {
+	LidarHandler::driver = *sl::createLidarDriver();
+	if (!LidarHandler::driver) {
 		fprintf(stderr, "insufficient memory, exit\n");
 		exit(-2);
 	}
@@ -56,16 +33,16 @@ void LidarHandler::setupLidar()
 	bool connectSuccess = false;
 
 	_channel = (*sl::createSerialPortChannel(opt_channel_param_first, baudrate));
-	if (SL_IS_OK((drv)->connect(_channel))) {
-		op_result = drv->getDeviceInfo(devinfo);
+	if (SL_IS_OK((LidarHandler::driver)->connect(_channel))) {
+		op_result = LidarHandler::driver->getDeviceInfo(devinfo);
 
 		if (SL_IS_OK(op_result))
 		{
 			connectSuccess = true;
 		}
 		else {
-			delete drv;
-			drv = NULL;
+			delete LidarHandler::driver;
+			LidarHandler::driver = NULL;
 		}
 	}
 	if (!connectSuccess) {
@@ -84,52 +61,84 @@ void LidarHandler::setupLidar()
 		, devinfo.firmware_version & 0xFF
 		, (int)devinfo.hardware_version);
 
-	drv->setMotorSpeed(0);
-	drv->startScan(0, 1);
 
+
+ 	LidarHandler::driver->setMotorSpeed(0);
+
+	startLidar = false;
+}
+
+LidarHandler::~LidarHandler()
+{
+	startLidar = false;
+	//this->lidarTask.join();
+}
+
+void LidarHandler::start(shared_ptr<rtc::DataChannel> & dataChannel)
+{
+	startLidar = true;
+	this->lidarTask = std::thread(&LidarHandler::setupLidar, std::ref(dataChannel), std::ref(startLidar), std::ref(driver));
+	this->lidarTask.detach();
+}
+
+void LidarHandler::setupLidar(shared_ptr<rtc::DataChannel> dataChannel, bool& startLidar, sl::ILidarDriver* driver)
+{
+	sl_result op_result;
+	sl::LidarScanMode current_scan_mode;
+	driver->startScan(0, 1, 0, &current_scan_mode);
+	
+	size_t nodeCount = 8192;
+	LidarDataSignal lidarData = LidarDataSignal();
+	sl_lidar_response_measurement_node_hq_t rawLidarData[nodeCount];
+	size_t test = sizeof(lidarData);
+	std::chrono::milliseconds(5000);
 	while (startLidar) {
-		sl_lidar_response_measurement_node_hq_t nodes[8192];
-		size_t count = (int)(sizeof(nodes) / sizeof(nodes[0]));
+		op_result = driver->grabScanDataHq(rawLidarData, nodeCount);
+		int start_node = 0, end_node = 0;
+		int i = 0;
 
-		op_result = drv->grabScanDataHq(nodes, count);
-
-		if (SL_IS_OK(op_result)) {
-			drv->ascendScanData(nodes, count);
-			//for (int pos = 0; pos < (int)count; ++pos) {
-			//	/*printf("%s theta: %03.2f Dist: %08.2f Q: %d \n",
-			//		(nodes[pos].flag & SL_LIDAR_RESP_HQ_FLAG_SYNCBIT) ? "S " : "  ",
-			//		(nodes[pos].angle_z_q14 * 90.f) / 16384.f,
-			//		nodes[pos].dist_mm_q2 / 4.0f,
-			//		nodes[pos].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);*/
-			//}
+		if (SL_IS_OK(op_result) && dataChannel->isOpen()) {
+			int validCount = convertRawDataToCoordinates(rawLidarData, lidarData.LidarData, nodeCount);
+			dataChannel->send(reinterpret_cast<const std::byte*>(&lidarData), sizeof(lidarData.LidarData[0]) * validCount + sizeof(lidarData.LidarData[0]));
 		}
-
-		if (0) {
-			break;
-		}
-
-
+		std::this_thread::sleep_for(std::chrono::milliseconds(250));
 	}
-	drv->stop();
+	driver->stop();
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	
-	drv->setMotorSpeed(0);
+	driver->setMotorSpeed(0);
 
-	if (drv) {
-		delete drv;
-		drv = NULL;
+	if (driver) {
+		delete driver;
+		driver = NULL;
 	}
 	return;
 }
 
+int LidarHandler::convertRawDataToCoordinates(sl_lidar_response_measurement_node_hq_t* node, LidarDataCoordinate* coords, int count)
+{
+	int i = 0, 
+		skipped = 0;
+	while (i < count) {
+		if (node[i].dist_mm_q2 == 0) {
+			skipped++;
+			i++;
+			continue;
+		}
+		coords[i - skipped].x = -1.0 * (node[i].dist_mm_q2 * cos((((node[i].angle_z_q14) / (16384.0*4)) * 360.0 + 142.5) * PI / 180.0));
+		coords[i - skipped].y = (node[i].dist_mm_q2 * sin((((node[i].angle_z_q14) / (16384.0*4)) * 360.0 + 142.5) * PI / 180.0));
+
+		i++;
+	}
+	return i - skipped;
+}
+
 void LidarHandler::stopLidar()
 {
-	// Stop the lidar
 }
 
 void LidarHandler::getLidarData()
 {
-	// Get the lidar data
 }
 

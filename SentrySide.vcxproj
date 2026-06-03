@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="CameraDataChannelHandler.cpp" />
     <ClCompile Include="ContolDataChannelHandler.cpp" />
+    <ClCompile Include="LidarDataSignal.hpp" />
     <ClCompile Include="LidarHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MessageSignal.hpp" />

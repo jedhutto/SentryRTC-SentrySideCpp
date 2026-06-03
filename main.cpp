@@ -20,21 +20,15 @@ using std::shared_ptr;
 using std::weak_ptr;
 template <class T> weak_ptr<T> make_weak_ptr(shared_ptr<T> ptr) { return ptr; }
 
-int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
-	CameraDataChannelHandler& cameraHandler, MovementHandler& movementHandler, ServoHandler& servoHandler, LidarHandler& lidarHandler,
+int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler, CameraDataChannelHandler& cameraHandler, 
+	MovementHandler& movementHandler, ServoHandler& servoHandler, LidarHandler& lidarHandler,
 	TableStorageEntry& answerTableEntry, std::shared_ptr<rtc::Track>& track,
 	std::shared_ptr<rtc::PeerConnection>& pc, std::shared_ptr<rtc::DataChannel>& dc) {
 
 	answerTableEntry = TableStorageEntry("answerer");
 	answerTableEntry.status = "standby";
 	HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
-	//Setup rtc
-	//rtc::InitLogger(rtc::LogLevel::Warning);
-	//rtc::Configuration config;
-	//config.iceServers.emplace_back("stun.l.google.com:19302");
-	//auto pc = std::make_shared<rtc::PeerConnection>(config);
-	//shared_ptr<rtc::DataChannel> dc;
-
+	result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, TableStorageEntry("caller", "", "", ""));
 
 	pc->setLocalDescription();
 
@@ -56,11 +50,9 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 		});
 	track->onClosed([&] {
 				std::cout << "track closed" << std::endl; ;
-				cameraHandler.Disconnect();
+				//cameraHandler.Disconnect();
 			});
 		});
-
-
 
 	pc->onLocalDescription([&](rtc::Description description) {
 		answerTableEntry.description = std::string(description);
@@ -90,19 +82,24 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 		answerTableEntry.status = "standby";
 		HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
 		
-		lidarHandler;
+		dc = _dc;
+		lidarHandler.start(dc);
 
 		std::cout << "[Got a DataChannel with label: " << _dc->label() << "]" << std::endl;
 
 
-		dc = _dc;
 
 		dc->onClosed([&]() {
 			std::cout << "[DataChannel closed: " << dc->label() << "]" << std::endl;
 			if (cameraHandler.IsRunning()) {
-				cameraHandler.StopCamera();
+				//cameraHandler.StopCamera();
+				//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				//cameraHandler.Disconnect();
+				//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				//cameraHandler.~CameraDataChannelHandler();
 			}
 			servoHandler.~ServoHandler();
+			lidarHandler.~LidarHandler();
 		});
 
 
@@ -114,8 +111,6 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 			}
 			switch (test) {
 			case Signal::Movement:
-				//MovementSignal ms;
-				//movementHandler.ms
 				std::memcpy(&movementHandler.ms, ((std::vector<std::byte>)std::get<std::vector<std::byte>>(data)).data(), sizeof(MovementSignal));
 				movementHandler.read = true;
 				break;
@@ -133,16 +128,22 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler,
 
 
 int main(int argc, char** argv) {
-	//Setup Azure Comms
 	int pi = gpioInitialise();
-	PCA9685 pca9685 = PCA9685(pi,1, 0x40,0);
-	pca9685.SetDutyCyclePercent(0, 0);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
-	pca9685.SetDutyCyclePercent(0, .5);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
-	pca9685.SetDutyCyclePercent(0, 1);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/2));
-	pca9685.SetDutyCyclePercent(0, .5);
+	int bus = 1;
+	int handle = i2cOpen(bus, 0);
+	PCA9685 pca9685 = PCA9685(pi,1, handle, 0x40,0);
+	PCA9685 motorPca9685 = PCA9685(pi, 1, handle, 0x41, 0);
+	motorPca9685.SetFrequency(600);
+	int servo0 = 0,
+		servo1 = 1,
+		servo2 = 2,
+		servo3 = 3,
+		servo4 = 4;
+	pca9685.SetDutyCyclePercent(servo0, .5);
+	pca9685.SetDutyCyclePercent(servo1, .5);
+	pca9685.SetDutyCyclePercent(servo2, .5);
+	pca9685.SetDutyCyclePercent(servo3, .5);
+	pca9685.SetDutyCyclePercent(servo4, .5);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1 * 1000/4));
 
 	TableStorageEntry answerTableEntry = TableStorageEntry("answerer");
@@ -157,114 +158,65 @@ int main(int argc, char** argv) {
 	
 	TableStorageRequestHandler tableStorageRequestHandler;
 	ServoHandler servoHandler = ServoHandler(pi, 0, pca9685);
-	MovementHandler movementHandler = MovementHandler(pi);
+	MovementHandler movementHandler = MovementHandler(pi, &motorPca9685);
 	CameraDataChannelHandler cameraHandler;
-	LidarHandler lidarHandler;
+	LidarHandler lidarHandler = LidarHandler();
 
 	bool exit = false;
+	int i = 0;
 	while (!exit) {
 		bool getPeer = true;
-		std::cout
-			<< std::endl
-			<< "**********************************************************************************"
-			<< std::endl
-			<< "[Command]: ";
+		
 
-		int command = 1;
+		pc = std::make_shared<rtc::PeerConnection>(config);
+		ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, servoHandler, lidarHandler, answerTableEntry, track, pc, dc);
 
-		//std::cin >> command;
-		//std::cin.ignore();
+		std::cout << std::endl
+				  << "**********************************************************************************"
+				  << std::endl
+				  << "System Config Complete"
+				  << std::endl;
 
-		switch (command) {
-			case 0: {
-				exit = true;
-				break;
-			}
-			case 1: {
-				pc = std::make_shared<rtc::PeerConnection>(config);
-				ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, servoHandler, lidarHandler, answerTableEntry, track, pc, dc);
-				while (getPeer) {
-					//Check if there is an offer available
-					HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.GET, TableStorageEntry("caller"));
+		while (getPeer) {
+			//Check if there is an offer available
+			HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.GET, TableStorageEntry("caller"));
 
-					if (result.entry.status.compare("calling") ==  0) {
-						getPeer = false;
-						std::cout << "Caller Description found" << std::endl;
-						std::string temp = result.entry.description;
-						pc->setRemoteDescription(temp);
-						std::cout <<  "Caller Candidate found" << std::endl;
+			if (result.entry.status.compare("calling") == 0) {
+				HttpObject result2 = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, TableStorageEntry("caller", "", "", ""));
+				
+				getPeer = false;
+				std::cout << "Caller Description found" << std::endl;
+				std::string temp = result.entry.description;
+				pc->setRemoteDescription(temp);
+				std::cout << "Caller Candidate found" << std::endl;
 
-						temp = result.entry.candidate;
-						int start = 0;
-						for (int end = start + 1; end < temp.size(); end++) {
-							if (temp[end] == '\n' || temp[end] == '\0') {
-								pc->addRemoteCandidate(temp.substr(start, end - start));
-								start = end + 1;
-							}
-						}
-
-						std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-						answerTableEntry.status = "answering";
-						HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
-						break;
-					}
-					else {
-						std::cout << "No caller, waiting" << std::endl;
-						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+				temp = result.entry.candidate;
+				int start = 0;
+				for (int end = start + 1; end < temp.size(); end++) {
+					if (temp[end] == '\n' || temp[end] == '\0') {
+						pc->addRemoteCandidate(temp.substr(start, end - start));
+						start = end + 1;
 					}
 				}
 
-				std::this_thread::sleep_for(std::chrono::milliseconds(30 * 1000));
-				while (dc->isOpen()) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-				}
-
-				break;
-			}
-			case 2: {
+				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 				answerTableEntry.status = "answering";
-				HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
-			}
-			case 3: {
-				// Send Message
-				if (!dc || !dc->isOpen()) {
-					std::cout << "** Channel is not Open ** " << std::endl;
-					break;
+				result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
+				
+				std::this_thread::sleep_for(std::chrono::milliseconds(15 * 1000));
+				while (dc->isOpen()) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 				}
-				std::cout << "[Message]: ";
-				std::string message;
-				getline(std::cin, message);
-				dc->send(message);
-				break;
+				exit = true;
+				//new (&servoHandler) ServoHandler(pi, 0, pca9685);
+				//new (&lidarHandler) LidarHandler();
+				//new (&cameraHandler) CameraDataChannelHandler();
 			}
-			case 4: {
-				// Connection Info
-				if (!dc || !dc->isOpen()) {
-					std::cout << "** Channel is not Open ** " << std::endl;
-					break;
-				}
-				rtc::Candidate local, remote;
-				std::optional<std::chrono::milliseconds> rtt = pc->rtt();
-				if (pc->getSelectedCandidatePair(&local, &remote)) {
-					std::cout << "Local: " << local << std::endl;
-					std::cout << "Remote: " << remote << std::endl;
-					std::cout << "Bytes Sent:" << pc->bytesSent()
-						<< " / Bytes Received:" << pc->bytesReceived() << " / Round-Trip Time:";
-					if (rtt.has_value())
-						std::cout << rtt.value().count();
-					else
-						std::cout << "null";
-					std::cout << " ms";
-				}
-				else {
-					std::cout << "Could not get Candidate Pair Info" << std::endl;
-				}
-				break;
+			else {
+				std::cout << "No caller, waiting - " << i++ << std::endl;
+				std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 			}
-			default: {
-				std::cout << "** Invalid Command ** " << std::endl;
-				break;
-			}
+
 		}
 	}
 

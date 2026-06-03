@@ -5,11 +5,13 @@ class PCA9685
 {
 public:
 	PCA9685() = default;;
-	PCA9685(int pi, int bus = 1, uint8_t address = 0x40, int channel = 0);
+	PCA9685(int pi, int bus = 1, int handle = 0, uint8_t address = 0x40, int channel = 0);
 	~PCA9685();
 	bool SetFrequency(double frequency);
 	float GetFrequency();
 	bool SetDutyCycle(int channel, int usec);
+	bool SetRawDutyCycle(int channel, int value);
+	int16_t GetDutyCycle(int channel);
 	bool SetDutyCyclePercent(int channel, float percent);
 	bool SetPulseWidth(int channel, float width);
 	bool Cancel();

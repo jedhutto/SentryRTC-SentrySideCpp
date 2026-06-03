@@ -3,13 +3,12 @@
 #include <unistd.h>
 #include <jetgpio.h>
 
-PCA9685::PCA9685(int pi, int bus, uint8_t address, int channel)
+PCA9685::PCA9685(int pi, int bus, int handle, uint8_t address, int channel)
 {
     this->pi = pi;
     this->bus = bus;
+    this->handle = handle;
     this->address = address;
-
-    handle = i2cOpen(bus, 0);
 
     WriteReg(MODE1, AI | ALLCALL);
     WriteReg(MODE2, OCH | OUTDRV);
@@ -49,13 +48,13 @@ bool PCA9685::SetFrequency(double frequency)
     }
 
     int mode = ReadReg(MODE1);
-    WriteReg(MODE1, (mode & ~SLEEP) | SLEEP);
-    WriteReg(PRESCALE, prescale);
-    WriteReg(MODE1, mode);
+    int result = WriteReg(MODE1, (mode & ~SLEEP) | SLEEP);
+    result = WriteReg(PRESCALE, prescale);
+    result = WriteReg(MODE1, mode);
 
     usleep(5);
 
-    WriteReg(MODE1, mode | RESTART);
+    result = WriteReg(MODE1, mode | RESTART);
 
     this->frequency = (25000000.0 / 4096.0) / (prescale + 1);
     pulseWidth = (1000000.0 / this->frequency);
@@ -77,36 +76,41 @@ bool PCA9685::SetDutyCycle(int channel, int usec)
     return true;
 }
 
+bool PCA9685::SetRawDutyCycle(int channel, int value)
+{
+    if (channel < 0 || channel > 15)
+    {
+        return false;
+    }
+
+    if (value < 0)
+    {
+        value = 0;
+    }
+    else if (value > 4095)
+    {
+        value = 4095;
+    }
+
+    i2cWriteWordData(handle, this->address, LED0_ON_L + 4 * channel, 0);
+    i2cWriteWordData(handle, this->address, LED0_OFF_L + 4 * channel, value);
+
+    return true;
+}
+
+int16_t PCA9685::GetDutyCycle(int channel)
+{
+	int on = i2cReadWordData(handle, this->address, LED0_ON_L + 4 * channel);
+	int off = i2cReadWordData(handle, this->address, LED0_OFF_L + 4 * channel);
+	return off;
+}
+
 bool PCA9685::SetDutyCyclePercent(int channel, float percent)
 {
     if (0 <= percent && percent <= 1) 
     {
         SetDutyCycle(channel, 500 + 2000*percent);
     }
-    //int steps = int(round(percent * (4096.0 / 100.0)));
-    //int on, off;
-    //if (steps < 0)
-    //{
-    //    on = 0;
-    //    off = 4096;
-    //}
-    //else if (steps > 4095)
-    //{
-    //    on = 4096;
-    //    off = 0;
-    //}
-    //else {
-    //    on = 0;
-    //    off = steps;
-    //}
-    //
-    //if (channel >= 0 && channel <= 15)
-    //{
-    //    char buf[] = { on & 0xFF, on >> 8, off & 0xFF, off >> 8 };
-    //    i2c_write_i2c_block_data(pi, handle, LED0_ON_L + 4 * channel, buf, 4);
-    //    return true;
-    //}
-    //return false;
 }
 
 bool PCA9685::SetPulseWidth(int channel, float width)

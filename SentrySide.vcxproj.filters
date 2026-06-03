@@ -18,6 +18,9 @@
     <ClCompile Include="PCA9685.cpp" />
     <ClCompile Include="ServoHandler.cpp" />
     <ClCompile Include="LidarHandler.cpp" />
+    <ClCompile Include="LidarDataSignal.hpp">
+      <Filter>Signals</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProjectStructures.h" />
