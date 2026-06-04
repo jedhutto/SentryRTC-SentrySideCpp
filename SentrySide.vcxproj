@@ -145,6 +145,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ADS1256.cpp" />
     <ClCompile Include="CameraDataChannelHandler.cpp" />
     <ClCompile Include="ContolDataChannelHandler.cpp" />
     <ClCompile Include="LidarDataSignal.hpp" />
@@ -159,8 +160,10 @@
     <ClCompile Include="Signal.hpp" />
     <ClCompile Include="TableStorageEntry.cpp" />
     <ClCompile Include="TableStorageRequestHandler.cpp" />
+    <ClCompile Include="VoltageHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ADS1256.h" />
     <ClInclude Include="base64.hpp" />
     <ClInclude Include="CameraDataChannelHandler.h" />
     <ClInclude Include="ContolDataChannelHandler.h" />
@@ -175,6 +178,14 @@
     <ClInclude Include="ServoSignal.hpp" />
     <ClInclude Include="TableStorageEntry.h" />
     <ClInclude Include="TableStorageRequestHandler.h" />
+    <ClInclude Include="VoltageDataSignal.hpp" />
+    <ClInclude Include="VoltageHandler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Adding_Multiple_Sensors.md" />
+    <None Include="ADS1256_Refactoring_Summary.md" />
+    <None Include="ADS1256_VoltageGensor_Wiring.md" />
+    <None Include="Quick_Reference_ADS1256.md" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile />

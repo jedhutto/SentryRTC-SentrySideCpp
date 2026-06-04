@@ -15,13 +15,15 @@
 #include "PCA9685.h"
 #include "ServoHandler.h"
 #include "LidarHandler.h"
+#include "VoltageHandler.h"
+#include "ADS1256.h"
 
 using std::shared_ptr;
 using std::weak_ptr;
 template <class T> weak_ptr<T> make_weak_ptr(shared_ptr<T> ptr) { return ptr; }
 
 int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler, CameraDataChannelHandler& cameraHandler, 
-	MovementHandler& movementHandler, ServoHandler& servoHandler, LidarHandler& lidarHandler,
+	MovementHandler& movementHandler, ServoHandler& servoHandler, LidarHandler& lidarHandler, VoltageHandler& voltageHandler,
 	TableStorageEntry& answerTableEntry, std::shared_ptr<rtc::Track>& track,
 	std::shared_ptr<rtc::PeerConnection>& pc, std::shared_ptr<rtc::DataChannel>& dc) {
 
@@ -81,9 +83,10 @@ int ConfigurePeer(TableStorageRequestHandler& tableStorageRequestHandler, Camera
 		answerTableEntry = TableStorageEntry("answerer");
 		answerTableEntry.status = "standby";
 		HttpObject result = tableStorageRequestHandler.SendRequest(tableStorageRequestHandler.PUT, answerTableEntry);
-		
+
 		dc = _dc;
 		lidarHandler.start(dc);
+		voltageHandler.start(dc);
 
 		std::cout << "[Got a DataChannel with label: " << _dc->label() << "]" << std::endl;
 
@@ -162,6 +165,10 @@ int main(int argc, char** argv) {
 	CameraDataChannelHandler cameraHandler;
 	LidarHandler lidarHandler = LidarHandler();
 
+	// Initialize ADS1256 ADC on SPI2 (channel 1) with DRDY on pin 7
+	ADS1256 adc = ADS1256(pi, 1, 7);
+	VoltageHandler voltageHandler = VoltageHandler(pi, adc, ADS1256::AIN0);  // Voltage sensor on channel AIN0
+
 	bool exit = false;
 	int i = 0;
 	while (!exit) {
@@ -169,7 +176,7 @@ int main(int argc, char** argv) {
 		
 
 		pc = std::make_shared<rtc::PeerConnection>(config);
-		ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, servoHandler, lidarHandler, answerTableEntry, track, pc, dc);
+		ConfigurePeer(tableStorageRequestHandler, cameraHandler, movementHandler, servoHandler, lidarHandler, voltageHandler, answerTableEntry, track, pc, dc);
 
 		std::cout << std::endl
 				  << "**********************************************************************************"

@@ -15,5 +15,6 @@ public:
         Message = 5,
         CameraLook = 6,
         LidarDataArray = 7,
+        VoltageData = 8,
     };
 };
